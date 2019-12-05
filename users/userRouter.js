@@ -28,7 +28,13 @@ function validateUserId(req, res, next) {
 }
 
 function validateUser(req, res, next) {
-  // do your magic!
+  if (!req.body) {
+    res.status(400).json({ errorMessage: "missing user data" });
+  } else if (req.body && req.body.name) {
+    next();
+  } else {
+    res.status(400).json({ errorMessage: "missing required name field" });
+  }
 }
 
 function validatePost(req, res, next) {
@@ -37,6 +43,7 @@ function validatePost(req, res, next) {
 
 // Declare the use of the middleware either locally or globally
 
+// endpoints
 router.get("/", (req, res) => {});
 
 router.get("/:id", (req, res) => {});
