@@ -6,7 +6,7 @@ const usersRouter = require("./users/userRouter");
 
 //define custom middleware
 function logger(req, res, next) {
-  console.log(`${req.method} to ${req.originalUrl}`);
+  console.log(`${req.method} to ${req.originalUrl} at ${date.now()}`);
   next();
 }
 
@@ -15,6 +15,7 @@ const middleware = [helmet(), express.json(), logger];
 //declare your server
 const server = express();
 //assign global middleware to endpoints
+
 server.use("api/user", middleware, usersRouter);
 server.use("api/post", middleware, postRouter);
 
