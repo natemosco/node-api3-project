@@ -29,7 +29,7 @@ function validateUserId(req, res, next) {
 }
 
 function validateUser(req, res, next) {
-  if (!req.body) {
+  if (Object.keys(req.body).length === 0) {
     res.status(400).json({ errorMessage: "missing user data" });
   } else if (req.body && req.body.name) {
     next();
@@ -39,7 +39,7 @@ function validateUser(req, res, next) {
 }
 
 function validatePost(req, res, next) {
-  if (!req.body) {
+  if (Object.keys(req.body).length === 0) {
     res.status(400).json({ errorMessage: "missing post data" });
   } else if (req.body && !req.body.text) {
     res.status(400).json({ errorMessage: "missing required text field" });
@@ -96,11 +96,52 @@ router.get("/:id/posts", validateUserId, (req, res) => {
     });
 });
 
-router.post("/", (req, res) => {});
+router.post("/", validateUser, (req, res) => {
+  userData
+    .insert(req.body)
+    .then(createdUser => {
+      res.status(201).json(createdUser);
+    })
+    .catch(error => {
+      console.log(error);
+      res.status(500).json({
+        errorMessage: "The user could not be created in the database."
+      });
+    });
+});
 
-router.post("/:id/posts", validateUserId, validatePost, (req, res) => {});
+router.post("/:id/posts", validateUserId, validatePost, (req, res) => {
+  postData
+    .insert(req.body)
+    .then(postToSpecificUserId => {
+      res.status(201).json(postToSpecificUserId);
+    })
+    .catch(error => {
+      console.log(error, "ERROR: POST /:id/posts");
+      res.status(500).json({
+        errorMessage:
+          "The post could not be added to specified user in database."
+      });
+    });
+});
 
-router.delete("/:id", (req, res) => {});
+router.delete("/:id", (req, res) => {
+  userData
+    .remove(req.params.id)
+    .then(
+      userData.getById(req.params.id).then(user => {
+        userData.get().then(allUsers => {
+          res.status(201).json({ deletedUser: user, allUsers: allUsers });
+        });
+      })
+    )
+    .catch(error => {
+      console.log(error, "ERROR: Delete /:id/");
+      res.status(500).json({
+        errorMessage: "Error, user could not be removed."
+      });
+    });
+});
 
 router.put("/:id", (req, res) => {});
 
