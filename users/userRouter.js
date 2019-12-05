@@ -3,6 +3,7 @@ const express = require("express"); // this means import
 const router = express.Router();
 
 const userData = require("./userDb");
+const postData = require("../posts/postDb");
 
 //custom middleware
 //here because even though hoisting is a thing it still makes more sense to declare something before using it whenever possible
@@ -53,8 +54,8 @@ function validatePost(req, res, next) {
 router.get("/", (req, res) => {
   userData
     .get()
-    .then(users => {
-      res.status(200).json(users);
+    .then(allUsers => {
+      res.status(200).json(allUsers);
     })
     .catch(error => {
       console.log(error, "GET / error");
@@ -62,13 +63,42 @@ router.get("/", (req, res) => {
     });
 });
 
-router.get("/:id", (req, res) => {});
+router.get("/:id", validateUserId, (req, res) => {
+  const id = req.params.id;
+  userData
+    .getById(id)
+    .then(singleUser => {
+      userData.get().then(allUsers => {
+        res.status(200).json({ userRequested: singleUser, allUsers: allUsers });
+      });
+    })
+    .catch(error => {
+      console.log(error);
+      res
+        .status(500)
+        .json({ errorMessage: "The user information could not be retrieved." });
+    });
+});
 
-router.get("/:id/posts", (req, res) => {});
+router.get("/:id/posts", validateUserId, (req, res) => {
+  const id = req.params.id;
+  userData
+    .getUserPosts(id)
+    .then(specifiedUserPosts => {
+      res.status(200).json(specifiedUserPosts);
+    })
+    .catch(error => {
+      console.log(error);
+      res.status(500).json({
+        errorMessage:
+          "The post information for this user could not be retrieved."
+      });
+    });
+});
 
 router.post("/", (req, res) => {});
 
-router.post("/:id/posts", (req, res) => {});
+router.post("/:id/posts", validateUserId, validatePost, (req, res) => {});
 
 router.delete("/:id", (req, res) => {});
 
