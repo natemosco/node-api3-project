@@ -38,13 +38,29 @@ function validateUser(req, res, next) {
 }
 
 function validatePost(req, res, next) {
-  // do your magic!
+  if (!req.body) {
+    res.status(400).json({ errorMessage: "missing post data" });
+  } else if (req.body && !req.body.text) {
+    res.status(400).json({ errorMessage: "missing required text field" });
+  } else {
+    next();
+  }
 }
 
 // Declare the use of the middleware either locally or globally
 
 // endpoints
-router.get("/", (req, res) => {});
+router.get("/", (req, res) => {
+  userData
+    .get()
+    .then(users => {
+      res.status(200).json(users);
+    })
+    .catch(error => {
+      console.log(error, "GET / error");
+      res.status(500).json({ errorMessage: "internal error fetching users" });
+    });
+});
 
 router.get("/:id", (req, res) => {});
 
