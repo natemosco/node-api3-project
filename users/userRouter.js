@@ -143,6 +143,15 @@ router.delete("/:id", (req, res) => {
     });
 });
 
-router.put("/:id", (req, res) => {});
+router.put("/:id", validateUser, (req, res) => {
+  userData
+    .update(req.params.id, req.body)
+    .then(updatedUser => {
+      res.status(200).json(updatedUser);
+    })
+    .catch(error => {
+      console.log(error, "PUT error");
+    });
+});
 
 module.exports = router;
